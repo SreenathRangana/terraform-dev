@@ -34,12 +34,12 @@ jobs:
     - name: Build and push Docker image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: hello-world-app
+        ECR_REPOSITORY: cloudzenia-repo
         IMAGE_TAG: latest
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
     
-    # - name: Force new deployment
-    #   run: |
-    #     aws ecs update-service --cluster hello-world-cluster --service hello-world-service --force-new-deployment
+    - name: Force new deployment
+      run: |
+        aws ecs update-service --cluster dev-cluster --service cloudzenia-service --force-new-deployment
