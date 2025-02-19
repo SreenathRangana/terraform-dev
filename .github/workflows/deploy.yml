@@ -24,7 +24,7 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-      
+
     - name: Create ECR repository if not exists
       run: |
         aws ecr describe-repositories --repository-names hello-world-app --region $AWS_REGION || \
@@ -40,6 +40,6 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
     
-    - name: Force new deployment
-      run: |
-        aws ecs update-service --cluster hello-world-cluster --service hello-world-service --force-new-deployment
+    # - name: Force new deployment
+    #   run: |
+    #     aws ecs update-service --cluster hello-world-cluster --service hello-world-service --force-new-deployment
