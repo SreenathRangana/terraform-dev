@@ -23,3 +23,11 @@ Automation: GitHub Actions handles deployment
 Push code → Website automatically goes live
 No manual deployment steps needed
 Everything runs in AWS cloud
+
+
+
+
+# Created Manually ACM in Console
+# Route53 Hostedzone created in console and NS changed in Hostinger
+
+# ACM and R53 Zone id call in tf files

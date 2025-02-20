@@ -30,7 +30,7 @@ jobs:
         aws ecr describe-repositories --repository-names cz-repo --region $AWS_REGION
      # aws ecr create-repository --repository-name hello-world-app --region $AWS_REGION
     
-    
+    ###
     - name: Build and push Docker image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
