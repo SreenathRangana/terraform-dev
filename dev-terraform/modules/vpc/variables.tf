@@ -29,14 +29,20 @@ variable "security_groups" {
 }
 
 
-variable "environment" {
-  description = "Environment (dev/staging/prod)"
-  type        = string
-  default     = "dev"
-}
+# variable "environment" {
+#   description = "Environment (dev/staging/prod)"
+#   type        = string
+#   default     = "dev"
+# }
 
 variable "project_name" {
   description = "Project name to be used for tagging"
   type        = string
-  default     = "cloudzenia"
+ # default     = "cloudzenia"
+}
+
+
+variable "env_name" {
+  description = "Environment name (e.g., dev, prod)"
+  type        = string
 }

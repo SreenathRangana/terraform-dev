@@ -8,6 +8,36 @@ resource "aws_ecs_cluster" "cluster" {
   }
 }
 
+# # IAM Role for ECS Task
+# resource "aws_iam_role" "ecs_task_role" {
+#   name = "ecs_task_role"
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [{
+#       Action = "sts:AssumeRole"
+#       Effect = "Allow"
+#       Principal = {
+#         Service = "ecs-tasks.amazonaws.com"
+#       }
+#     }]
+#   })
+# }
+
+# # IAM Role for ECS Execution
+# resource "aws_iam_role" "ecs_execution_role" {
+#   name = "ecs_execution_role"
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [{
+#       Action = "sts:AssumeRole"
+#       Effect = "Allow"
+#       Principal = {
+#         Service = "ecs-tasks.amazonaws.com"
+#       }
+#     }]
+#   })
+# }
+
 # IAM Role for ECS Task Execution
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "${var.project_name}-ecs-task-execution-role"
@@ -34,6 +64,25 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
+  resource "aws_security_group" "ecs_sg" {
+    name   = "${var.environment}-${var.project_name}-ecs-sg"
+    vpc_id = var.vpc_id 
+
+    ingress {
+      from_port       = 80
+      to_port         = 80
+      protocol        = "tcp"
+      security_groups = [var.alb_security_group]
+    }
+
+    egress {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
 
 
 # ECS Task Definition for Nginx
@@ -69,11 +118,16 @@ resource "aws_ecs_task_definition" "task" {
 # ECS Service Configuration
 resource "aws_ecs_service" "service" {
   #name            = "nginx-service"
-  name            = "${var.project_name}-service"
+  #name            = "${var.project_name}-service"
+  name            = "${var.env_name}-${var.project_name}-ecs"
   cluster         = var.cluster_name
   task_definition = aws_ecs_task_definition.task.arn
   desired_count   = 1
   launch_type     = "FARGATE"
+  deployment_circuit_breaker {
+      enable   = true
+      rollback = true
+    }
 
   network_configuration {
     subnets          = var.subnets
@@ -101,4 +155,31 @@ resource "aws_ecs_service" "service" {
     Environment = var.environment
   }
 
+}
+
+# Target Tracking Scaling for ECS Service
+resource "aws_appautoscaling_target" "ecs_target" {
+  max_capacity       = var.ecs_max_capacity
+  min_capacity       = var.ecs_min_capacity
+  resource_id        = "service/${aws_ecs_cluster.cluster.name}/${aws_ecs_service.service.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "ecs_scaling_policy" {
+  name               = "${var.project_name}-ecs-scaling-policy"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value       = 50.0
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 60
+
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+  }
 }

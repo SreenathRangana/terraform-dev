@@ -39,7 +39,6 @@ variable "project_name" {
   default     = "cloudzenia"
 }
 
-
 variable "task_role_arn" {
   description = "IAM role for ECS task"
   type        = string
@@ -50,12 +49,36 @@ variable "execution_role_arn" {
   type        = string
 }
 
-
-
 variable "environment" {
   description = "Environment (dev/staging/prod)"
   type        = string
-  default     = "dev"
 }
 
 
+
+variable "env_name" {
+  description = "Environment name (e.g., dev, prod)"
+  type        = string
+}
+
+
+variable "ecs_min_capacity" {
+  description = "Minimum number of ECS tasks"
+  type        = number
+}
+
+variable "ecs_max_capacity" {
+  description = "Maximum number of ECS tasks"
+  type        = number
+}
+
+variable "alb_security_group" {
+  description = "Security group ID of the ALB"
+  type        = string
+}
+
+
+variable "acm_certificate_arn" {
+  description = "ARN of the ACM certificate for the ALB"
+  type        = string
+}

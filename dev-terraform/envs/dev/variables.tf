@@ -22,18 +22,13 @@ variable "private_subnets" {
 variable "enable_ecr_vpc_endpoint" {
   description = "Flag to enable ECR VPC endpoint"
   type        = bool
-  default     = false
-}
-variable "azs" {
-  type        = list(string)
-  description = "List of Availability Zones"
 }
 
-variable "security_groups" {
-  description = "List of security group IDs to associate with the VPC"
+variable "azs" {
+  description = "List of Availability Zones"
   type        = list(string)
-  default     = []  # Set a default value if necessary
 }
+
 
 # ECR Variables
 variable "repository_name" {
@@ -50,13 +45,38 @@ variable "cluster_name" {
 variable "project_name" {
   description = "Project name to be used for tagging"
   type        = string
-  default     = "cloudzenia"
 }
-
-
 
 variable "environment" {
-  description = "Environment (dev/staging/prod)"
+  description = "Environment name (e.g., dev, prod)"
   type        = string
-  default     = "dev"
 }
+
+
+variable "acm_certificate_arn" {
+  description = "ARN of the ACM certificate for HTTPS"
+  type        = string
+}
+
+variable "route53_zone_id" {
+  description = "Route 53 Hosted Zone ID for the domain"
+  type        = string
+}
+
+
+variable "ecs_min_capacity" {
+  description = "Minimum number of ECS tasks"
+  type        = number
+}
+
+variable "ecs_max_capacity" {
+  description = "Maximum number of ECS tasks"
+  type        = number
+}
+
+
+
+# variable "domain_name" {
+#   description = "Domain name for Route 53"
+#   type        = string
+# }

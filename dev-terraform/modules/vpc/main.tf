@@ -5,8 +5,8 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true # Enable DNS hostnames
   
   tags = {
-    Name = "main-vpc"
-  }
+      Name = "${var.env_name}-${var.project_name}-vpc"
+    }
 }
 
 
@@ -40,8 +40,11 @@ resource "aws_subnet" "private" {
 # Create route tables for public subnets
 resource "aws_route_table" "public" {
   count = length(var.public_subnet_cidrs) # Fixed variable name
-
   vpc_id = aws_vpc.main.id
+
+  tags = {
+      Name = "${var.env_name}-${var.project_name}-rt"
+    }
 }
 
 # Associate route tables with public subnets
@@ -63,7 +66,47 @@ resource "aws_route" "default_route" {
   gateway_id             = aws_internet_gateway.main.id
 }
 
+# Allocate Elastic IP for NAT Gateway
+resource "aws_eip" "nat" {
+  domain = "vpc"
 
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-nat-eip"
+  }
+}
+
+# Create a NAT Gateway in Public Subnet
+resource "aws_nat_gateway" "nat_gw" {
+  allocation_id = aws_eip.nat.id
+  subnet_id      = aws_subnet.public[0].id  # NAT must be in a public subnet
+
+  tags = {
+      Name = "${var.env_name}-${var.project_name}-nat"
+    }
+}
+
+# Create a route table for private subnets
+resource "aws_route_table" "pvt_rt" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-pvt-rt"
+  }
+}
+
+# Add NAT Gateway Route to Private Route Table
+resource "aws_route" "pvt_nat_route" {
+  route_table_id         = aws_route_table.pvt_rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_gw.id
+}
+
+# Associate Private Subnets with Private Route Table
+resource "aws_route_table_association" "pvt_rt_assoc" {
+  count          = length(var.private_subnet_cidrs)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.pvt_rt.id
+}
 
 # Create ECR VPC Endpoint (Interface Type)
 resource "aws_vpc_endpoint" "ecr" {
@@ -101,9 +144,8 @@ resource "aws_security_group" "vpc_endpoint_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
   tags = {
     Name        = "${var.project_name}-ecs-tasks-sg"
-    Environment = var.environment
+    Environment = var.env_name
   }
 }
