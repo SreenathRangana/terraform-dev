@@ -27,14 +27,14 @@ jobs:
 
     - name: Create ECR repository if not exists
       run: |
-        aws ecr describe-repositories --repository-names cloudzenia-repo --region $AWS_REGION
-    #aws ecr create-repository --repository-name cloudzenia-repo --region $AWS_REGION
+        aws ecr describe-repositories --repository-names cz-repo --region $AWS_REGION || \
+     # aws ecr create-repository --repository-name hello-world-app --region $AWS_REGION
     
     
     - name: Build and push Docker image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: cloudzenia-repo
+        ECR_REPOSITORY: cz-repo
         IMAGE_TAG: latest
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -42,4 +42,4 @@ jobs:
     
     - name: Force new deployment
       run: |
-        aws ecs update-service --cluster dev-cluster --service cloudzenia-service --force-new-deployment
+        aws ecs update-service --cluster dev-cluster --service dev-cloudzenia-ecs  --force-new-deployment
