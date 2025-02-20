@@ -8,6 +8,7 @@ provider "aws" {
 # VPC Module
 module "vpc" {
   source               = "../../modules/vpc"
+  project_name    = var.project_name
   vpc_cidr             = var.vpc_cidr
   public_subnet_cidrs  = var.public_subnets
   private_subnet_cidrs = var.private_subnets
@@ -15,7 +16,7 @@ module "vpc" {
   azs                  = var.azs
  # security_groups      = [aws_security_group.alb_sg.id] # Define this
   security_groups = [module.alb.alb_security_group_id]
-  env_name             = var.environment
+  env_name             = var.env_name
 }
 
 # # Security Group for ALB (Created after VPC to avoid circular dependency)
@@ -53,7 +54,8 @@ module "ecr" {
   source          = "../../modules/ecr"
   repository_name = var.repository_name
   project_name    = var.project_name
-  environment     = var.environment
+  #environment     = var.environment
+  env_name             = var.env_name
 }
 
 # ALB Module
@@ -64,7 +66,8 @@ module "alb" {
   domain_name         = "saissk.fun"                   # Change to your actual domain
  # security_groups     = [aws_security_group.alb_sg.id] # Pass security group to ALB module
   security_groups = [module.alb.alb_security_group_id]
-  environment         = var.environment
+  #environment         = var.environment
+  env_name             = var.env_name
   project_name        = var.project_name           # Add missing project_name
   acm_certificate_arn = var.acm_certificate_arn  # Correct module reference
  # acm_certificate_validation = module.acm.acm_certificate_validation_arn
@@ -126,19 +129,8 @@ module "ecs" {
   task_role_arn      = aws_iam_role.ecs_task_role.arn
   execution_role_arn = aws_iam_role.ecs_execution_role.arn
   ecr_repository_url = module.ecr.repository_url
-  env_name           = var.environment      # Add missing env_name
-  environment        = var.environment      #  Add missing environment
+  env_name           = var.env_name      # Add missing env_name
   ecs_min_capacity   = var.ecs_min_capacity #  Add missing ecs_min_capacity
   ecs_max_capacity   = var.ecs_max_capacity
 
 }
-
-
-
-
-# module "route53" {
-#   source       = "./modules/route53"
-#   domain_name  = var.domain_name
-#   alb_dns_name = module.alb.alb_dns_name
-#   alb_zone_id  = module.alb.alb_zone_id
-# }

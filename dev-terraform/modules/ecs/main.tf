@@ -3,8 +3,7 @@ resource "aws_ecs_cluster" "cluster" {
   name = var.cluster_name
 
   tags = {
-    Name        = "${var.project_name}-task-definition"
-    Environment = var.environment
+    Name        = "${var.env_name}-${var.project_name}-alb-task-definition"
   }
 }
 
@@ -54,8 +53,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 
   tags = {
-    Name        = "${var.project_name}-ecs-execution-role"
-    Environment = var.environment
+    Name        = "${var.env_name}-${var.project_name}-ecs-execution-role"
   }
 }
 
@@ -66,7 +64,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
 }
 
   resource "aws_security_group" "ecs_sg" {
-    name   = "${var.environment}-${var.project_name}-ecs-sg"
+    name   = "${var.env_name}-${var.project_name}-ecs-sg"
     vpc_id = var.vpc_id 
 
     ingress {
@@ -110,8 +108,7 @@ resource "aws_ecs_task_definition" "task" {
     ]
   }])
    tags = {
-    Name        = "${var.project_name}-task-definition"
-    Environment = var.environment
+    Name        = "${var.env_name}-${var.project_name}-task-definition"
   }
 }
 
@@ -151,8 +148,7 @@ resource "aws_ecs_service" "service" {
   ]
 
     tags = {
-    Name        = "${var.project_name}-ecs-service"
-    Environment = var.environment
+    Name        = "${var.env_name}-${var.project_name}-ecs-service"
   }
 
 }

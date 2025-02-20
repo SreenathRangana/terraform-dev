@@ -9,6 +9,11 @@ enable_ecr_vpc_endpoint = true
 azs                     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
 
+
+project_name = "cloudzenia"
+
+
+env_name = "dev"
 # ECR Variables
 repository_name = "nginx-repo"
 

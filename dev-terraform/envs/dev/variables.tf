@@ -47,7 +47,9 @@ variable "project_name" {
   type        = string
 }
 
-variable "environment" {
+
+
+variable "env_name" {
   description = "Environment name (e.g., dev, prod)"
   type        = string
 }
@@ -73,10 +75,3 @@ variable "ecs_max_capacity" {
   description = "Maximum number of ECS tasks"
   type        = number
 }
-
-
-
-# variable "domain_name" {
-#   description = "Domain name for Route 53"
-#   type        = string
-# }

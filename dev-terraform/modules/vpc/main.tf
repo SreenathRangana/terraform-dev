@@ -85,6 +85,7 @@ resource "aws_nat_gateway" "nat_gw" {
     }
 }
 
+
 # Create a route table for private subnets
 resource "aws_route_table" "pvt_rt" {
   vpc_id = aws_vpc.main.id
@@ -99,6 +100,9 @@ resource "aws_route" "pvt_nat_route" {
   route_table_id         = aws_route_table.pvt_rt.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.nat_gw.id
+  lifecycle {
+    ignore_changes = [destination_cidr_block]
+  }
 }
 
 # Associate Private Subnets with Private Route Table
@@ -144,8 +148,7 @@ resource "aws_security_group" "vpc_endpoint_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name        = "${var.project_name}-ecs-tasks-sg"
-    Environment = var.env_name
+ tags = {
+    Name = "${var.env_name}-${var.project_name}-vpc-task-sg"
   }
 }

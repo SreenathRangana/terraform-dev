@@ -1,5 +1,5 @@
 resource "aws_security_group" "alb_sg" {
-    name   = "${var.environment}-${var.project_name}-alb-sg"
+    name   = "${var.env_name}-${var.project_name}-alb-sg"
     vpc_id = var.vpc_id
 
     ingress {
@@ -27,7 +27,7 @@ resource "aws_security_group" "alb_sg" {
 # Create an Application Load Balancer
 resource "aws_lb" "main" {
   #name               = "main-alb"
-  name               = "${var.environment}-${var.project_name}-alb"
+  name               = "${var.env_name}-${var.project_name}-alb"
   internal           = false
   load_balancer_type = "application"
   #security_groups    = var.security_groups
@@ -38,9 +38,8 @@ resource "aws_lb" "main" {
   enable_cross_zone_load_balancing = true
   enable_http2 = true
 
-  tags = {
-    Name        = "${var.project_name}-ecs-tasks-sg"
-    Environment = var.environment
+   tags = {
+    Name = "${var.env_name}-${var.project_name}-alb"
   }
 }
 
@@ -60,9 +59,9 @@ resource "aws_lb_target_group" "target_group" {
     unhealthy_threshold = 2
   }
   
-  tags = {
-      Name = "${var.environment}-${var.project_name}-alb"
-    }
+   tags = {
+    Name = "${var.env_name}-${var.project_name}-alb"
+  }
 }
 
 
@@ -73,15 +72,15 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn
-    fixed_response {
-      status_code = 200
-      content_type = "text/plain"
-      message_body = "OK"
+    type = "redirect"
+   # target_group_arn = aws_lb_target_group.target_group.arn
+    redirect {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
     }
   }
-}
 
 # Create an ALB listener for HTTP traffic on port 80
 resource "aws_lb_listener" "https" {
