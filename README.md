@@ -58,4 +58,4 @@ Final Steps
 Apply Terraform → Get NS records from Route 53
 Update NS records manually in Hostinger
 Wait for DNS propagation
-Once done, Route 53 will control your domain’s DNS! Let me know if you need help! 🚀
+Once done, Route 53 will control your domain’s DNS! Let me know if you need help!
