@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "cluster" {
   name = var.cluster_name
 
   tags = {
-    Name = "${var.env_name}-${var.project_name}-alb-task-definition"
+    Name = "${var.env_name}-${var.project_name}-ecs-cluster"
   }
 }
 
@@ -52,6 +52,33 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
+# # Attach ECS Execution Role Policy (Required for Fargate + ECR Access)
+# resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
+#   role       = aws_iam_role.ecs_task_execution_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+# }
+# IAM Role for ECS Task Execution
+# resource "aws_iam_role" "ecs_task_execution_role" {
+#   name = "${var.project_name}-ecs-task-execution-role"
+
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [{
+#       Effect = "Allow"
+#       Principal = {
+#         Service = "ecs-tasks.amazonaws.com"
+#       }
+#       Action = "sts:AssumeRole"
+#     }]
+#   })
+
+#   tags = {
+#     Name = "${var.env_name}-${var.project_name}-ecs-execution-role"
+#   }
+# }
+
+
 
 resource "aws_security_group" "ecs_sg" {
   name        = "${var.env_name}-${var.project_name}-ecs-sg"
@@ -112,13 +139,14 @@ resource "aws_ecs_task_definition" "task" {
     ]
   }])
   tags = {
-    Name = "${var.env_name}-${var.project_name}-task-definition"
+    Name = "${var.env_name}-${var.project_name}-ecs-task-definition"
   }
 }
 
 # ECS Service Configuration
 resource "aws_ecs_service" "service" {
   #name            = "nginx-service"
+  #name            = "${var.project_name}-service"
   name            = "${var.env_name}-${var.project_name}-ecs"
   cluster         = var.cluster_name
   task_definition = aws_ecs_task_definition.task.arn
@@ -143,6 +171,9 @@ resource "aws_ecs_service" "service" {
   }
   # Ensure ALB is provisioned before creating ECS service
   depends_on = [
+    # var.alb_arn,  # Ensure ALB is provisioned before ECS service
+    # var.alb_target_group_arn  # Ensure Target Group is linked
+    #aws_lb_listener.http,  # Wait for ALB Listener
     #aws_lb_target_group.target_group,  # Ensure Target Group is linked
     var.alb_listener_arn
   ]
@@ -182,4 +213,6 @@ resource "aws_appautoscaling_policy" "ecs_scaling_policy" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
   }
+
+
 }

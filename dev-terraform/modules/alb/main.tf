@@ -83,6 +83,9 @@ resource "aws_lb_listener" "http" {
       status_code = "HTTP_301"
     }
   }
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-alb-http-listener"
+  }
 }
 
 # Create an ALB listener for HTTP traffic on port 80
@@ -103,6 +106,9 @@ resource "aws_lb_listener" "https" {
       content_type = "text/plain"
       message_body = "OK"
     }
+  }
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-alb-https-listerner"
   }
   #depends_on = [aws_acm_certificate_validation.alb_cert_validation]  #  Ensure ACM is validated
 }
