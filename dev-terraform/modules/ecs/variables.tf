@@ -49,6 +49,12 @@ variable "execution_role_arn" {
   type        = string
 }
 
+# variable "environment" {
+#   description = "Environment (dev/staging/prod)"
+#   type        = string
+# }
+
+
 
 variable "env_name" {
   description = "Environment name (e.g., dev, prod)"

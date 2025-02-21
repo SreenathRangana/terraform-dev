@@ -4,9 +4,15 @@ resource "aws_vpc" "main" {
   enable_dns_support = true   # Enable DNS support
   enable_dns_hostnames = true # Enable DNS hostnames
   
+  # tags = {
+  #     Name = "${var.env_name}-${var.project_name}-vpc"
+  #   }
+
   tags = {
-      Name = "${var.env_name}-${var.project_name}-vpc"
-    }
+  Name        = "${var.env_name}-${var.project_name}-vpc"
+  Environment = var.env_name
+  Project     = var.project_name
+}
 }
 
 
@@ -20,7 +26,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "public-subnet-${count.index}"
+   Name = "${var.env_name}-${var.project_name}-public-subnet-${count.index}"
   }
 }
 
@@ -33,7 +39,7 @@ resource "aws_subnet" "private" {
   availability_zone       = element(var.azs, count.index)
 
   tags = {
-    Name = "private-subnet-${count.index}"
+    Name = "${var.env_name}-${var.project_name}-private-subnet-${count.index}"
   }
 }
 
@@ -57,6 +63,10 @@ resource "aws_route_table_association" "public_association" {
 # Create an internet gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
+
+tags = {
+  Name = "${var.env_name}-${var.project_name}-igw"
+}
 }
 
 # Create a default route for public subnets
@@ -123,8 +133,8 @@ resource "aws_vpc_endpoint" "ecr" {
   vpc_endpoint_type  = "Interface"
 
   tags = {
-    Name = "ECR VPC Endpoint"
-  }
+  Name = "${var.env_name}-${var.project_name}-ecr-endpoint"
+}
  
 }
 
@@ -149,6 +159,6 @@ resource "aws_security_group" "vpc_endpoint_sg" {
   }
 
  tags = {
-    Name = "${var.env_name}-${var.project_name}-vpc-task-sg"
+   Name = "${var.env_name}-${var.project_name}-vpc-endpoint-sg"
   }
 }

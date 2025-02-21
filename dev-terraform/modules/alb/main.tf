@@ -22,6 +22,9 @@ resource "aws_security_group" "alb_sg" {
       protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
     }
+    tags = {
+    Name = "${var.env_name}-${var.project_name}-alb-sg"
+  }
   }
 
 # Create an Application Load Balancer

@@ -65,21 +65,42 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
 
   resource "aws_security_group" "ecs_sg" {
     name   = "${var.env_name}-${var.project_name}-ecs-sg"
-    vpc_id = var.vpc_id 
+    description = "Security group for ECS tasks"
+    vpc_id = var.vpc_id
 
-    ingress {
-      from_port       = 80
-      to_port         = 80
-      protocol        = "tcp"
-      security_groups = [var.alb_security_group]
-    }
+    # ingress {
+    #   from_port       = 80
+    #   to_port         = 80
+    #   protocol        = "tcp"
+    #   security_groups = [var.alb_security_group]
+    # }
 
-    egress {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+    # Allow traffic only from ALB Security Group
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [var.alb_security_group]  # Restrict to ALB SG
+  }
+
+
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [var.alb_security_group]  # Restrict to ALB SG
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]  # Restrict this if possible
+  }
+
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-ecs-sg"
+  }
   }
 
 
@@ -160,6 +181,10 @@ resource "aws_appautoscaling_target" "ecs_target" {
   resource_id        = "service/${aws_ecs_cluster.cluster.name}/${aws_ecs_service.service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
+
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-ecs-autoscaling-target"
+  }
 }
 
 resource "aws_appautoscaling_policy" "ecs_scaling_policy" {
@@ -178,4 +203,6 @@ resource "aws_appautoscaling_policy" "ecs_scaling_policy" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
   }
+  
+    
 }
