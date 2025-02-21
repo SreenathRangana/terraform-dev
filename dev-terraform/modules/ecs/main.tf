@@ -7,39 +7,29 @@ resource "aws_ecs_cluster" "cluster" {
   }
 }
 
-# # IAM Role for ECS Task
-# resource "aws_iam_role" "ecs_task_role" {
-#   name = "ecs_task_role"
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [{
-#       Action = "sts:AssumeRole"
-#       Effect = "Allow"
-#       Principal = {
-#         Service = "ecs-tasks.amazonaws.com"
-#       }
-#     }]
-#   })
-# }
+# IAM Role for ECS Task
+resource "aws_iam_role" "ecs_task_role" {
+  name = "${var.project_name}-ecs-task-role"
 
-# # IAM Role for ECS Execution
-# resource "aws_iam_role" "ecs_execution_role" {
-#   name = "ecs_execution_role"
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [{
-#       Action = "sts:AssumeRole"
-#       Effect = "Allow"
-#       Principal = {
-#         Service = "ecs-tasks.amazonaws.com"
-#       }
-#     }]
-#   })
-# }
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
 
-# IAM Role for ECS Task Execution
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.project_name}-ecs-task-execution-role"
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-ecs-task-role"
+  }
+}
+
+#  IAM Role for ECS Task Execution
+resource "aws_iam_role" "ecs_execution_role" {
+  name = "${var.project_name}-ecs-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -57,9 +47,9 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   }
 }
 
-# Attach ECS Execution Role Policy (Required for Fargate + ECR Access)
+# Attach ECS Execution Role Policy
 resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
-  role       = aws_iam_role.ecs_task_execution_role.name
+  role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
@@ -67,13 +57,6 @@ resource "aws_security_group" "ecs_sg" {
   name        = "${var.env_name}-${var.project_name}-ecs-sg"
   description = "Security group for ECS tasks"
   vpc_id      = var.vpc_id
-
-  # ingress {
-  #   from_port       = 80
-  #   to_port         = 80
-  #   protocol        = "tcp"
-  #   security_groups = [var.alb_security_group]
-  # }
 
   # Allow traffic only from ALB Security Group
   ingress {
@@ -112,7 +95,7 @@ resource "aws_ecs_task_definition" "task" {
   memory                   = "512"       # Minimum required for Fargate
   network_mode             = "awsvpc"    # Required for Fargate
   requires_compatibilities = ["FARGATE"] # Ensure Fargate compatibility
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
 
   container_definitions = jsonencode([{
     # name      = "nginx"
@@ -136,7 +119,6 @@ resource "aws_ecs_task_definition" "task" {
 # ECS Service Configuration
 resource "aws_ecs_service" "service" {
   #name            = "nginx-service"
-  #name            = "${var.project_name}-service"
   name            = "${var.env_name}-${var.project_name}-ecs"
   cluster         = var.cluster_name
   task_definition = aws_ecs_task_definition.task.arn
@@ -161,9 +143,6 @@ resource "aws_ecs_service" "service" {
   }
   # Ensure ALB is provisioned before creating ECS service
   depends_on = [
-    # var.alb_arn,  # Ensure ALB is provisioned before ECS service
-    # var.alb_target_group_arn  # Ensure Target Group is linked
-    #aws_lb_listener.http,  # Wait for ALB Listener
     #aws_lb_target_group.target_group,  # Ensure Target Group is linked
     var.alb_listener_arn
   ]
@@ -203,6 +182,4 @@ resource "aws_appautoscaling_policy" "ecs_scaling_policy" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
   }
-
-
 }

@@ -12,7 +12,7 @@ azs                     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 # Project name used for tagging and resource naming  
 project_name = "cloudzenia"
 
-#  Define the environment (dev, prod, etc.)
+# Define the environment (dev, prod, etc.)
 env_name = "dev"
 
 # ECR Variables
@@ -33,6 +33,8 @@ ecs_min_capacity = 1 # Also ensure min capacity is set
 
 # ARN of the ACM certificate for HTTPS (used in ALB)
 #acm_certificate_arn = "arn:aws:acm:us-east-1:434103605849:certificate/bc6c6a0d-cff2-4557-872f-37d5422e1e6e"
+
+
 # Hosted zone ID for Route 53 DNS records 
 #route53_zone_id = "Z009583419TCMFOR2917R"
 

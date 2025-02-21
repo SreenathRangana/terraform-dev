@@ -28,7 +28,6 @@ variable "security_groups" {
   description = "Security groups for VPC endpoints"
 }
 
-
 variable "env_name" {
   description = "Environment (dev/staging/prod)"
   type        = string
@@ -38,9 +37,3 @@ variable "project_name" {
   description = "Project name to be used for tagging"
   type        = string
 }
-
-
-# variable "env_name" {
-#   description = "Environment name (e.g., dev, prod)"
-#   type        = string
-# }

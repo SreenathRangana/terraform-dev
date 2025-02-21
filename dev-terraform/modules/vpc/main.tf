@@ -4,15 +4,9 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true # Enable DNS support
   enable_dns_hostnames = true # Enable DNS hostnames
 
-  # tags = {
-  #     Name = "${var.env_name}-${var.project_name}-vpc"
-  #   }
-
   tags = {
-    Name        = "${var.env_name}-${var.project_name}-vpc"
-    Environment = var.env_name
-    Project     = var.project_name
-  }
+      Name = "${var.env_name}-${var.project_name}-vpc"
+    }
 }
 
 
@@ -126,7 +120,6 @@ resource "aws_route_table_association" "pvt_rt_assoc" {
 resource "aws_vpc_endpoint" "ecr" {
   vpc_id       = aws_vpc.main.id
   service_name = "com.amazonaws.${var.region}.ecr.api"
-  # route_table_ids         = [aws_route_table.public[0].id]
   subnet_ids          = aws_subnet.public[*].id
   security_group_ids  = [aws_security_group.vpc_endpoint_sg.id] # Specify the security group here
   private_dns_enabled = true

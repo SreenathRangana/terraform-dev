@@ -12,4 +12,3 @@ variable "env_name" {
   description = "Environment (dev/staging/prod)"
   type        = string
 }
-

@@ -49,18 +49,10 @@ variable "execution_role_arn" {
   type        = string
 }
 
-# variable "environment" {
-#   description = "Environment (dev/staging/prod)"
-#   type        = string
-# }
-
-
-
 variable "env_name" {
   description = "Environment name (e.g., dev, prod)"
   type        = string
 }
-
 
 variable "ecs_min_capacity" {
   description = "Minimum number of ECS tasks"
@@ -76,7 +68,6 @@ variable "alb_security_group" {
   description = "Security group ID of the ALB"
   type        = string
 }
-
 
 variable "acm_certificate_arn" {
   description = "ARN of the ACM certificate for the ALB"
