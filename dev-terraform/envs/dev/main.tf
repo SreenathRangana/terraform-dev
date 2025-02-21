@@ -3,20 +3,29 @@ provider "aws" {
   region = var.region
 }
 
+# ACM & Route53 Module
+module "acm-r53" {
+  source          = "../../modules/acm-r53"
+  domain_name     = var.domain_name
+  env_name        = var.env_name
+  project_name    = var.project_name
+#  route53_zone_id = module.acm-r53.aws_route53_zone.zone_id
+  route53_zone_id = module.acm-r53.route53_zone_id
+}
 
 
 # VPC Module
 module "vpc" {
   source               = "../../modules/vpc"
-  project_name    = var.project_name
+  project_name         = var.project_name
   vpc_cidr             = var.vpc_cidr
   public_subnet_cidrs  = var.public_subnets
   private_subnet_cidrs = var.private_subnets
   region               = var.region
   azs                  = var.azs
- # security_groups      = [aws_security_group.alb_sg.id] # Define this
+  # security_groups      = [aws_security_group.alb_sg.id] # Define this
   security_groups = [module.alb.alb_security_group_id]
-  env_name             = var.env_name
+  env_name        = var.env_name
 }
 
 # # Security Group for ALB (Created after VPC to avoid circular dependency)
@@ -55,23 +64,24 @@ module "ecr" {
   repository_name = var.repository_name
   project_name    = var.project_name
   #environment     = var.environment
-  env_name             = var.env_name
+  env_name = var.env_name
 }
 
 # ALB Module
 module "alb" {
-  source              = "../../modules/alb"
-  vpc_id              = module.vpc.vpc_id
-  public_subnets      = module.vpc.public_subnet_ids
-  domain_name         = "saissk.fun"                   # Change to your actual domain
- # security_groups     = [aws_security_group.alb_sg.id] # Pass security group to ALB module
+  source         = "../../modules/alb"
+  vpc_id         = module.vpc.vpc_id
+  public_subnets = module.vpc.public_subnet_ids
+  # domain_name         = "saissk.fun"  
+  domain_name = var.domain_name # Change to your actual domain
+  # security_groups     = [aws_security_group.alb_sg.id] # Pass security group to ALB module
   security_groups = [module.alb.alb_security_group_id]
   #environment         = var.environment
-  env_name             = var.env_name
-  project_name        = var.project_name           # Add missing project_name
-  acm_certificate_arn = var.acm_certificate_arn  # Correct module reference
- # acm_certificate_validation = module.acm.acm_certificate_validation_arn
-  route53_zone_id     = var.route53_zone_id
+  env_name            = var.env_name
+  project_name        = var.project_name        # Add missing project_name
+  acm_certificate_arn = module.acm-r53.acm_certificate_arn # Correct module reference
+  # acm_certificate_validation = module.acm.acm_certificate_validation_arn
+  route53_zone_id = module.acm-r53.route53_zone_id
 }
 
 
@@ -115,21 +125,21 @@ module "ecs" {
   alb_target_group_arn = module.alb.alb_target_group_arn
   alb_arn              = module.alb.alb_arn
   alb_listener_arn     = module.alb.alb_listener_arn
-  acm_certificate_arn  = var.acm_certificate_arn
+  acm_certificate_arn  = module.acm-r53.acm_certificate_arn
   public_subnets       = module.vpc.public_subnet_ids
   subnets              = module.vpc.public_subnet_ids
   #private_subnets      = module.vpc.private_subnet_ids
- # security_groups = [aws_security_group.alb_sg.id] # Now explicitly passed
+  # security_groups = [aws_security_group.alb_sg.id] # Now explicitly passed
   security_groups = [module.alb.alb_security_group_id]
   #security_groups     = [module.alb.alb_security_group_id]
   #security_groups      = [aws_security_group.ecs_sg.id]  #  Pass ECS SG explicitly
- # alb_security_group = module.alb.alb_security_group.alb_sg.id
+  # alb_security_group = module.alb.alb_security_group.alb_sg.id
   alb_security_group = module.alb.alb_security_group_id
   #alb_security_group = [aws_security_group.alb_sg.id]
   task_role_arn      = aws_iam_role.ecs_task_role.arn
   execution_role_arn = aws_iam_role.ecs_execution_role.arn
   ecr_repository_url = module.ecr.repository_url
-  env_name           = var.env_name      # Add missing env_name
+  env_name           = var.env_name         # Add missing env_name
   ecs_min_capacity   = var.ecs_min_capacity #  Add missing ecs_min_capacity
   ecs_max_capacity   = var.ecs_max_capacity
 

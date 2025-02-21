@@ -9,6 +9,6 @@ resource "aws_ecr_repository" "repo" {
 
 
   tags = {
-      Name = "${var.env_name}-${var.project_name}-ecr"
-    }
+    Name = "${var.env_name}-${var.project_name}-ecr"
+  }
 }

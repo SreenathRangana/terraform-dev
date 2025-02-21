@@ -9,6 +9,6 @@ output "private_subnet_ids" {
 }
 
 output "vpc_id" {
-  value       = aws_vpc.main.id  # This should be the actual VPC resource ID in the module
+  value       = aws_vpc.main.id # This should be the actual VPC resource ID in the module
   description = "The VPC ID"
 }

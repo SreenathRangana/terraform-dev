@@ -1,31 +1,31 @@
 resource "aws_security_group" "alb_sg" {
-    name   = "${var.env_name}-${var.project_name}-alb-sg"
-    vpc_id = var.vpc_id
+  name   = "${var.env_name}-${var.project_name}-alb-sg"
+  vpc_id = var.vpc_id
 
-    ingress {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-    ingress {
-      from_port   = 443
-      to_port     = 443
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-    egress {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-    tags = {
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
     Name = "${var.env_name}-${var.project_name}-alb-sg"
   }
-  }
+}
 
 # Create an Application Load Balancer
 resource "aws_lb" "main" {
@@ -34,24 +34,24 @@ resource "aws_lb" "main" {
   internal           = false
   load_balancer_type = "application"
   #security_groups    = var.security_groups
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = var.public_subnets
-  
+  security_groups = [aws_security_group.alb_sg.id]
+  subnets         = var.public_subnets
+
 
   enable_cross_zone_load_balancing = true
-  enable_http2 = true
+  enable_http2                     = true
 
-   tags = {
+  tags = {
     Name = "${var.env_name}-${var.project_name}-alb"
   }
 }
 
 # Create a target group for the ALB
 resource "aws_lb_target_group" "target_group" {
-  name     = "main-target-group"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
+  name        = "main-target-group"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
   target_type = "ip"
 
   health_check {
@@ -61,8 +61,8 @@ resource "aws_lb_target_group" "target_group" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
-  
-   tags = {
+
+  tags = {
     Name = "${var.env_name}-${var.project_name}-alb"
   }
 }
@@ -76,14 +76,14 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type = "redirect"
-   # target_group_arn = aws_lb_target_group.target_group.arn
+    # target_group_arn = aws_lb_target_group.target_group.arn
     redirect {
-        port        = "443"
-        protocol    = "HTTPS"
-        status_code = "HTTP_301"
-      }
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
     }
   }
+}
 
 # Create an ALB listener for HTTP traffic on port 80
 resource "aws_lb_listener" "https" {
@@ -92,14 +92,14 @@ resource "aws_lb_listener" "https" {
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
   #certificate_arn = aws_acm_certificate.alb_cert.arn  # Automatically created
-  certificate_arn   = var.acm_certificate_arn
+  certificate_arn = var.acm_certificate_arn
   #certificate_arn  = aws_acm_certificate.alb_cert.arn
 
   default_action {
-    type = "forward"
+    type             = "forward"
     target_group_arn = aws_lb_target_group.target_group.arn
     fixed_response {
-      status_code = 200
+      status_code  = 200
       content_type = "text/plain"
       message_body = "OK"
     }

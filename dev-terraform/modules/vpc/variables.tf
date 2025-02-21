@@ -38,3 +38,9 @@ variable "project_name" {
   description = "Project name to be used for tagging"
   type        = string
 }
+
+
+# variable "env_name" {
+#   description = "Environment name (e.g., dev, prod)"
+#   type        = string
+# }

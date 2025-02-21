@@ -42,8 +42,18 @@ variable "cluster_name" {
   type        = string
 }
 
+# variable "project_name" {
+#   description = "Project name to be used for tagging"
+#   type        = string
+# }
+
+variable "env_name" {
+  description = "The environment name (e.g., dev, prod)"
+  type        = string
+}
+
 variable "project_name" {
-  description = "Project name to be used for tagging"
+  description = "The project name"
   type        = string
 }
 
@@ -54,21 +64,21 @@ variable "project_name" {
 
 
 
-variable "env_name" {
-  description = "Environment name (e.g., dev, prod)"
-  type        = string
-}
+# variable "env_name" {
+#   description = "Environment name (e.g., dev, prod)"
+#   type        = string
+# }
 
 
-variable "acm_certificate_arn" {
-  description = "ARN of the ACM certificate for HTTPS"
-  type        = string
-}
+# variable "acm_certificate_arn" {
+#   description = "ARN of the ACM certificate for HTTPS"
+#   type        = string
+# }
 
-variable "route53_zone_id" {
-  description = "Route 53 Hosted Zone ID for the domain"
-  type        = string
-}
+# variable "route53_zone_id" {
+#   description = "Route 53 Hosted Zone ID for the domain"
+#   type        = string
+# }
 
 
 variable "ecs_min_capacity" {
@@ -80,3 +90,14 @@ variable "ecs_max_capacity" {
   description = "Maximum number of ECS tasks"
   type        = number
 }
+
+
+variable "domain_name" {
+  description = "The domain name for the ACM certificate and Route 53"
+  type        = string
+}
+
+# variable "route53_zone_id" {
+#   description = "The Route 53 Hosted Zone ID"
+#   type        = string
+# }

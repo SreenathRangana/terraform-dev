@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "cluster" {
   name = var.cluster_name
 
   tags = {
-    Name        = "${var.env_name}-${var.project_name}-alb-task-definition"
+    Name = "${var.env_name}-${var.project_name}-alb-task-definition"
   }
 }
 
@@ -53,7 +53,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 
   tags = {
-    Name        = "${var.env_name}-${var.project_name}-ecs-execution-role"
+    Name = "${var.env_name}-${var.project_name}-ecs-execution-role"
   }
 }
 
@@ -63,24 +63,24 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-  resource "aws_security_group" "ecs_sg" {
-    name   = "${var.env_name}-${var.project_name}-ecs-sg"
-    description = "Security group for ECS tasks"
-    vpc_id = var.vpc_id
+resource "aws_security_group" "ecs_sg" {
+  name        = "${var.env_name}-${var.project_name}-ecs-sg"
+  description = "Security group for ECS tasks"
+  vpc_id      = var.vpc_id
 
-    # ingress {
-    #   from_port       = 80
-    #   to_port         = 80
-    #   protocol        = "tcp"
-    #   security_groups = [var.alb_security_group]
-    # }
+  # ingress {
+  #   from_port       = 80
+  #   to_port         = 80
+  #   protocol        = "tcp"
+  #   security_groups = [var.alb_security_group]
+  # }
 
-    # Allow traffic only from ALB Security Group
+  # Allow traffic only from ALB Security Group
   ingress {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [var.alb_security_group]  # Restrict to ALB SG
+    security_groups = [var.alb_security_group] # Restrict to ALB SG
   }
 
 
@@ -88,37 +88,37 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
     from_port       = 443
     to_port         = 443
     protocol        = "tcp"
-    security_groups = [var.alb_security_group]  # Restrict to ALB SG
+    security_groups = [var.alb_security_group] # Restrict to ALB SG
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]  # Restrict this if possible
+    cidr_blocks = ["0.0.0.0/0"] # Restrict this if possible
   }
 
   tags = {
     Name = "${var.env_name}-${var.project_name}-ecs-sg"
   }
-  }
+}
 
 
 # ECS Task Definition for Nginx
 resource "aws_ecs_task_definition" "task" {
- # family                   = "nginx-task"
+  # family                   = "nginx-task"
   family                   = "${var.project_name}-task"
-  cpu                      = "256"    # Minimum required for Fargate
-  memory                   = "512"    # Minimum required for Fargate
-  network_mode             = "awsvpc" # Required for Fargate
+  cpu                      = "256"       # Minimum required for Fargate
+  memory                   = "512"       # Minimum required for Fargate
+  network_mode             = "awsvpc"    # Required for Fargate
   requires_compatibilities = ["FARGATE"] # Ensure Fargate compatibility
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([{
-   # name      = "nginx"
-    name            = "${var.project_name}-service"
-   # image     = "nginx:latest"
-    image = "${var.ecr_repository_url}:latest"
+    # name      = "nginx"
+    name = "${var.project_name}-service"
+    # image     = "nginx:latest"
+    image     = "${var.ecr_repository_url}:latest"
     essential = true
     portMappings = [
       {
@@ -128,8 +128,8 @@ resource "aws_ecs_task_definition" "task" {
       }
     ]
   }])
-   tags = {
-    Name        = "${var.env_name}-${var.project_name}-task-definition"
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-task-definition"
   }
 }
 
@@ -143,24 +143,24 @@ resource "aws_ecs_service" "service" {
   desired_count   = 1
   launch_type     = "FARGATE"
   deployment_circuit_breaker {
-      enable   = true
-      rollback = true
-    }
+    enable   = true
+    rollback = true
+  }
 
   network_configuration {
     subnets          = var.subnets
-    assign_public_ip = true  # Assign public IP if needed
+    assign_public_ip = true # Assign public IP if needed
     security_groups  = var.security_groups
   }
 
   load_balancer {
     target_group_arn = var.alb_target_group_arn
     #container_name   = "nginx"
-    container_name   = "${var.project_name}-service"
-    container_port   = 80
+    container_name = "${var.project_name}-service"
+    container_port = 80
   }
   # Ensure ALB is provisioned before creating ECS service
-    depends_on = [
+  depends_on = [
     # var.alb_arn,  # Ensure ALB is provisioned before ECS service
     # var.alb_target_group_arn  # Ensure Target Group is linked
     #aws_lb_listener.http,  # Wait for ALB Listener
@@ -168,8 +168,8 @@ resource "aws_ecs_service" "service" {
     var.alb_listener_arn
   ]
 
-    tags = {
-    Name        = "${var.env_name}-${var.project_name}-ecs-service"
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-ecs-service"
   }
 
 }
@@ -203,6 +203,6 @@ resource "aws_appautoscaling_policy" "ecs_scaling_policy" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
   }
-  
-    
+
+
 }

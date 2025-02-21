@@ -1,18 +1,18 @@
 # Create the main VPC
 resource "aws_vpc" "main" {
-  cidr_block = var.vpc_cidr
-  enable_dns_support = true   # Enable DNS support
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true # Enable DNS support
   enable_dns_hostnames = true # Enable DNS hostnames
-  
+
   # tags = {
   #     Name = "${var.env_name}-${var.project_name}-vpc"
   #   }
 
   tags = {
-  Name        = "${var.env_name}-${var.project_name}-vpc"
-  Environment = var.env_name
-  Project     = var.project_name
-}
+    Name        = "${var.env_name}-${var.project_name}-vpc"
+    Environment = var.env_name
+    Project     = var.project_name
+  }
 }
 
 
@@ -26,7 +26,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-   Name = "${var.env_name}-${var.project_name}-public-subnet-${count.index}"
+    Name = "${var.env_name}-${var.project_name}-public-subnet-${count.index}"
   }
 }
 
@@ -34,9 +34,9 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   count = length(var.private_subnet_cidrs)
 
-  vpc_id     = aws_vpc.main.id
-  cidr_block = var.private_subnet_cidrs[count.index]
-  availability_zone       = element(var.azs, count.index)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_subnet_cidrs[count.index]
+  availability_zone = element(var.azs, count.index)
 
   tags = {
     Name = "${var.env_name}-${var.project_name}-private-subnet-${count.index}"
@@ -45,12 +45,12 @@ resource "aws_subnet" "private" {
 
 # Create route tables for public subnets
 resource "aws_route_table" "public" {
-  count = length(var.public_subnet_cidrs) # Fixed variable name
+  count  = length(var.public_subnet_cidrs) # Fixed variable name
   vpc_id = aws_vpc.main.id
 
   tags = {
-      Name = "${var.env_name}-${var.project_name}-rt"
-    }
+    Name = "${var.env_name}-${var.project_name}-rt"
+  }
 }
 
 # Associate route tables with public subnets
@@ -64,9 +64,9 @@ resource "aws_route_table_association" "public_association" {
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-tags = {
-  Name = "${var.env_name}-${var.project_name}-igw"
-}
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-igw"
+  }
 }
 
 # Create a default route for public subnets
@@ -88,11 +88,11 @@ resource "aws_eip" "nat" {
 # Create a NAT Gateway in Public Subnet
 resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.nat.id
-  subnet_id      = aws_subnet.public[0].id  # NAT must be in a public subnet
+  subnet_id     = aws_subnet.public[0].id # NAT must be in a public subnet
 
   tags = {
-      Name = "${var.env_name}-${var.project_name}-nat"
-    }
+    Name = "${var.env_name}-${var.project_name}-nat"
+  }
 }
 
 
@@ -124,18 +124,18 @@ resource "aws_route_table_association" "pvt_rt_assoc" {
 
 # Create ECR VPC Endpoint (Interface Type)
 resource "aws_vpc_endpoint" "ecr" {
-  vpc_id             = aws_vpc.main.id
-  service_name       = "com.amazonaws.${var.region}.ecr.api"
- # route_table_ids         = [aws_route_table.public[0].id]
-  subnet_ids         = aws_subnet.public[*].id
-  security_group_ids = [aws_security_group.vpc_endpoint_sg.id]  # Specify the security group here
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.${var.region}.ecr.api"
+  # route_table_ids         = [aws_route_table.public[0].id]
+  subnet_ids          = aws_subnet.public[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id] # Specify the security group here
   private_dns_enabled = true
-  vpc_endpoint_type  = "Interface"
+  vpc_endpoint_type   = "Interface"
 
   tags = {
-  Name = "${var.env_name}-${var.project_name}-ecr-endpoint"
-}
- 
+    Name = "${var.env_name}-${var.project_name}-ecr-endpoint"
+  }
+
 }
 
 # Create a security group for the VPC Endpoint
@@ -158,7 +158,7 @@ resource "aws_security_group" "vpc_endpoint_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
- tags = {
-   Name = "${var.env_name}-${var.project_name}-vpc-endpoint-sg"
+  tags = {
+    Name = "${var.env_name}-${var.project_name}-vpc-endpoint-sg"
   }
 }
