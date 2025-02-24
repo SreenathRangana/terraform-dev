@@ -10,20 +10,22 @@ azs                     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
 
 # Project name used for tagging and resource naming  
-project_name = "cloudzenia"
+project_name = "nurseplexus"
 
 # Define the environment (dev, prod, etc.)
 env_name = "dev"
 
 # ECR Variables
-repository_name = "nginx-repo"
+repository_name = "nurseplexus-repo"
 
 # ECS Variables
-cluster_name = "dev-cluster"
+cluster_name = "nurseplexus-dev"
 
 #DNS NAME 
-domain_name = "saissk.fun"
+domain_name = "devapi-new.agilenurses.com"
 
+# ARN of the ACM certificate for HTTPS (used in ALB)
+acm_certificate_arn = "arn:aws:acm:us-east-1:886436924955:certificate/1f091abd-07c3-4e6a-ae24-487297f0d2de"
 
 # Maximum ECS task count (auto-scaling upper limit)  
 ecs_max_capacity = 3 # Set the actual value

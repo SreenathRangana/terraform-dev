@@ -70,10 +70,10 @@ variable "project_name" {
 # }
 
 
-# variable "acm_certificate_arn" {
-#   description = "ARN of the ACM certificate for HTTPS"
-#   type        = string
-# }
+variable "acm_certificate_arn" {
+  description = "ARN of the ACM certificate for HTTPS"
+  type        = string
+}
 
 # variable "route53_zone_id" {
 #   description = "Route 53 Hosted Zone ID for the domain"

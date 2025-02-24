@@ -2,14 +2,14 @@
 provider "aws" {
   region = var.region
 }
-# ACM & ACM Module
-module "acm-r53" {
-  source          = "../../modules/acm-r53"
-  domain_name     = var.domain_name
-  env_name        = var.env_name
-  project_name    = var.project_name
-  route53_zone_id = module.acm-r53.route53_zone_id
-}
+# # ACM & ACM Module
+# module "acm-r53" {
+#   source          = "../../modules/acm-r53"
+#   domain_name     = var.domain_name
+#   env_name        = var.env_name
+#   project_name    = var.project_name
+#   route53_zone_id = module.acm-r53.route53_zone_id
+# }
 
 
 # VPC Module
@@ -44,7 +44,8 @@ module "alb" {
   security_groups = [module.alb.alb_security_group_id] # Pass security group to ALB module
   env_name            = var.env_name
   project_name        = var.project_name        # Add missing project_name
-  acm_certificate_arn = module.acm-r53.acm_certificate_arn # Correct module reference
+  #acm_certificate_arn = module.acm-r53.acm_certificate_arn # Correct module reference
+  acm_certificate_arn = var.acm_certificate_arn
   route53_zone_id = module.acm-r53.route53_zone_id
 }
 
@@ -57,7 +58,8 @@ module "ecs" {
   alb_target_group_arn = module.alb.alb_target_group_arn
   alb_arn              = module.alb.alb_arn
   alb_listener_arn     = module.alb.alb_listener_arn
-  acm_certificate_arn  = module.acm-r53.acm_certificate_arn
+  #acm_certificate_arn  = module.acm-r53.acm_certificate_arn
+  acm_certificate_arn = var.acm_certificate_arn
   public_subnets       = module.vpc.public_subnet_ids
   subnets              = module.vpc.public_subnet_ids
   security_groups = [module.alb.alb_security_group_id]
